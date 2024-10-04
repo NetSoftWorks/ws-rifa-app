@@ -12,7 +12,7 @@ export class UsuarioService {
   constructor(private httpCliente: HttpClient) { }
 
   login(correo: any, password: any): Observable<any> {
-    const url = `${this.urlBase}login`;
+    const url = `/api/login`;
     return this.httpCliente.post<any>(url, { correo, password });
   }
 
