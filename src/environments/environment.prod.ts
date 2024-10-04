@@ -11,6 +11,6 @@ const firebaseConfig = {
 
 export const environment = {
   production: true,
-  urlBase: 'http://27.0.172.93/api/',
+  urlBase: 'https://4de96d4f-ff25-4d89-ba26-b3baa72c839c.clouding.host/api/',
   firebaseConfig: firebaseConfig,
 };
