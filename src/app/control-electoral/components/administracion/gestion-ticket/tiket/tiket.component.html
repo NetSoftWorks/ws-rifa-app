@@ -1,0 +1,146 @@
+<div class="grid">
+	<div class="col-12">
+		<div class="card">
+			<h5>Rifas</h5>
+			<p-dataView #dv [value]="listaRifas" [paginator]="true" [rows]="9" filterBy="name" [sortField]="sortField"
+				[sortOrder]="sortOrder" layout="grid">
+				<ng-template let-listaRifa pTemplate="gridItem">
+					<div class="col-12 md:col-4">
+						<div class="card m-3 border-1 surface-border">
+							<div class="flex flex-wrap gap-2 align-items-center justify-content-between mb-2">
+								<div class="flex align-items-center">
+									<i class="pi pi-tag mr-2"></i>
+									<!-- <span class="font-semibold">{{product.category}}</span> -->
+									<span class="font-semibold">{{'Ticket'}}</span>
+								</div>
+								<span [class]="listaRifa.estado === 0 ? 'product-badge status-outofstock' : 'product-badge status-instock'
+								">
+									{{ getStatusText(listaRifa.estado) }}
+								</span>
+
+							</div>
+							<div class="flex flex-column align-items-center text-center mb-3">
+								<img src="../../../../../../assets/layout/images/Miller365.png" alt="img"
+									class="w-9 shadow-2 my-3 mx-0" />
+								<div class="text-2xl font-bold">{{listaRifa.cifras > 1 ? listaRifa.cifras + ' Cifras' : listaRifa.cifras + ' Cifra'}} </div>
+								<!-- <div class="mb-3">{{'Disponibles: '}}{{listaRifa.limite}}</div> -->
+							</div>
+							<div class="flex align-items-center justify-content-between">
+								<span class="text-2xl font-semibold">${{listaRifa.valor}}</span>
+								<!-- <p-button icon="pi pi-shopping-cart"
+									[disabled]="product.inventoryStatus === 'OUTOFSTOCK'"></p-button> -->
+								<p-button [disabled]="listaRifa.limite === 0" icon="pi pi-shopping-cart"
+									(click)="verMas(listaRifa)" class="p-button-danger"></p-button>
+							</div>
+						</div>
+					</div>
+				</ng-template>
+			</p-dataView>
+
+			<p-dialog [(visible)]="comprarTicket" position="center" [style]="{ width: '450px' }" header="Ticket"
+				[modal]="true" styleClass="p-fluid" (onHide)="cerrarDialog()">
+				<div *ngIf="!pdfUrl" class="grid-container">
+					<div class="card">
+						<h4 class="block text-900 font-medium mb-3 text-center"> Valor de Ticket: <strong style="font-size: 30px;">${{rifaDatos?.valor}}</strong> </h4>
+						
+						<div class="field" style="margin-top: 10px;">
+							<label for="valorRifa">Número de la suerte</label>
+							<div class="p-inputgroup">
+								<span class="p-inputgroup-addon">N°</span>
+								<input type="text" pInputText [(ngModel)]="numSuerte" placeholder="Número" required
+									[minlength]="rifaDatos?.cifras" [maxlength]="rifaDatos?.cifras" pattern="^[0-9]*$"
+									#numSuerteInput="ngModel" (input)="validarNumero(numSuerteInput)" />
+								<button pButton type="button" label="Vender Ticket" class="p-button-outlined"
+									(click)="guardarTicket(numSuerteInput)" [disabled]="numeroValido"></button>
+							</div>
+							<!-- Condicional para mostrar error cuando el campo está vacío -->
+							<div *ngIf="numSuerte === ''" class="p-error">
+								El número de la suerte es requerido
+							</div>
+
+							<div *ngIf="(numSuerteInput.errors?.minlength || numSuerteInput.errors?.maxlength) && numSuerteInput.touched"
+								class="p-error">
+								El número debe tener exactamente {{rifaDatos?.cifras}} caracteres
+							</div>
+						</div>
+						<div class="mb-4" *ngIf="numSuerte != '' && !(numSuerteInput.errors?.minlength || numSuerteInput.errors?.maxlength)">
+							<p-progressBar [value]="porcentaje" [showValue]="true"></p-progressBar>
+						</div>
+						
+						<ul class="p-0 mx-0 mt-0 mb-4 list-none">
+							<li class="flex align-items-center py-2 border-bottom-1 surface-border">
+								<div class="w-3rem h-3rem flex align-items-center justify-content-center bg-green-100 border-circle mr-3 flex-shrink-0">
+									<i class="pi pi-dollar text-xl text-green-700"></i>
+								</div>
+								<span class="text-900 line-height-3">Primera Suerte:
+									<span class="text-700" style="font-size: 20px; font-weight: bold;"> ${{rifaDatos?.primera_suerte}}	</span>
+								</span>
+							</li>
+							<li class="flex align-items-center py-2 border-bottom-1 surface-border">
+								<div class="w-3rem h-3rem flex align-items-center justify-content-center bg-green-100 border-circle mr-3 flex-shrink-0">
+									<i class="pi pi-dollar text-xl text-green-700"></i>
+								</div>
+								<span class="text-900 line-height-3">Segunda Suerte:
+									<span class="text-700" style="font-size: 20px; font-weight: bold;"> ${{rifaDatos?.segunda_suerte}}	</span>
+								</span>
+							</li>
+							<li class="flex align-items-center py-2 border-bottom-1 surface-border">
+								<div class="w-3rem h-3rem flex align-items-center justify-content-center bg-green-100 border-circle mr-3 flex-shrink-0">
+									<i class="pi pi-dollar text-xl text-green-700"></i>
+								</div>
+								<span class="text-900 line-height-3">Tercera Suerte:
+									<span class="text-700" style="font-size: 20px; font-weight: bold;"> ${{rifaDatos?.tercera_suerte}}	</span>
+								</span>
+							</li>
+							<li class="flex align-items-center py-2 border-bottom-1 surface-border">
+								<div class="w-3rem h-3rem flex align-items-center justify-content-center bg-green-100 border-circle mr-3 flex-shrink-0">
+									<i class="pi pi-dollar text-xl text-green-700"></i>
+								</div>
+								<span class="text-900 line-height-3">Cuarta Suerte:
+									<span class="text-700" style="font-size: 20px; font-weight: bold;"> ${{rifaDatos?.cuarta_suerte}}	</span>
+								</span>
+							</li>
+							<li class="flex align-items-center py-2 border-bottom-1 surface-border">
+								<div class="w-3rem h-3rem flex align-items-center justify-content-center bg-green-100 border-circle mr-3 flex-shrink-0">
+									<i class="pi pi-dollar text-xl text-green-700"></i>
+								</div>
+								<span class="text-900 line-height-3">Quinta Suerte:
+									<span class="text-700" style="font-size: 20px; font-weight: bold;"> ${{rifaDatos?.quinta_suerte}}	</span>
+								</span>
+							</li>
+							<li class="flex align-items-center py-2 border-bottom-1 surface-border">
+								<div class="w-3rem h-3rem flex align-items-center justify-content-center bg-green-100 border-circle mr-3 flex-shrink-0">
+									<i class="pi pi-dollar text-xl text-green-700"></i>
+								</div>
+								<span class="text-900 line-height-3">Sexta Suerte:
+									<span class="text-700" style="font-size: 20px; font-weight: bold;"> ${{rifaDatos?.sexta_suerte}}	</span>
+								</span>
+							</li>
+							<li class="flex align-items-center py-2 surface-border">
+								<div class="w-3rem h-3rem flex align-items-center justify-content-center bg-green-100 border-circle mr-3 flex-shrink-0">
+									<i class="pi pi-dollar text-xl text-green-700"></i>
+								</div>
+								<span class="text-900 line-height-3">Septima Suerte:
+									<span class="text-700" style="font-size: 20px; font-weight: bold;"> ${{rifaDatos?.septima_suerte}}	</span>
+								</span>
+							</li>
+							
+						</ul>
+					</div>
+					
+				</div>
+
+				<div class="col-12" *ngIf="pdfUrl">
+					<iframe [src]="pdfUrl" width="100%" height="400px"></iframe>
+				</div>
+
+			</p-dialog>
+		</div>
+	</div>
+</div>
+
+<p-toast key="tst"></p-toast>
+
+<ngx-spinner bdColor="rgba(0, 0, 0, 0.8)" size="medium" color="#08b549" type="ball-fussion" [fullScreen]="true">
+	<p style="color: #08b549"> Cargando... </p>
+</ngx-spinner>

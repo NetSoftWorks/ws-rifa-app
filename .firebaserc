@@ -1,0 +1,16 @@
+{
+  "projects": {
+    "default": "Miller365"
+  },
+  "targets": {
+    "Miller365": {
+      "hosting": {
+        "default": [
+          "default"
+        ]
+      }
+    }
+  },
+  "etags": {},
+  "dataconnectEmulatorConfig": {}
+}
